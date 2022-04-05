@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 
 
-user = input("enter how much you have:  ")
+user = input("How much money do you have? ")
 url = 'https://www.tgju.org/%D9%82%DB%8C%D9%85%D8%AA-%D8%AF%D9%84%D8%A7%D8%B1'
 
 
