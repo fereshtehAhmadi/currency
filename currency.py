@@ -1,22 +1,55 @@
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
 
 
-user = input("How much money do you have? ")
-url = 'https://www.tgju.org/%D9%82%DB%8C%D9%85%D8%AA-%D8%AF%D9%84%D8%A7%D8%B1'
+def get_exchange_rate():
+    """Fetch the latest USD to IRR exchange rate from tgju.org."""
+    url = 'https://www.tgju.org'
+
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        price_element = soup.select_one(".info-price span")
+        if not price_element:
+            raise ValueError("Exchange rate element not found on the page.")
+
+        price_text = price_element.text.replace(",", "")
+        return float(price_text)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching exchange rate: {e}")
+    except ValueError as e:
+        print(f"Parsing error: {e}")
+
+    return None
 
 
-response = requests.get(url)
-html_doc = response.text
+def get_user_amount():
+    """Prompt user to enter amount in USD and validate input."""
+    while True:
+        user_input = input("How much money do you have in USD? ")
+        try:
+            return float(user_input)
+        except ValueError:
+            print("Invalid input! Please enter a valid number.")
 
 
-soup = BeautifulSoup(html_doc, 'html.parser')
+def main():
+    """Main function to get user input, fetch exchange rate, and display the converted amount."""
+    exchange_rate = get_exchange_rate()
 
-td = soup.find('td').contents[0]
-td = td.split(",")
-td = int(td[0]+td[1])
-price = int(user)*td
+    if exchange_rate is None:
+        print("Could not retrieve exchange rate. Please try again later.")
+        return
+
+    user_amount = get_user_amount()
+    total_irr = user_amount * exchange_rate
+
+    print(f"{user_amount} USD is approximately {total_irr:,.0f} IRR")
 
 
-print(price)
-			
+if __name__ == "__main__":
+    main()
